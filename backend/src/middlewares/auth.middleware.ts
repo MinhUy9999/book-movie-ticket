@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 interface AuthRequest extends Request {
-    user?: any; // Định nghĩa thêm thuộc tính `user`
+    user?: any; 
 }
 
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -14,7 +14,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-        req.user = decoded; // Gán user vào request
+        req.user = decoded;
         next();
     } catch (error) {
         return res.status(403).json({ message: "Invalid token" });

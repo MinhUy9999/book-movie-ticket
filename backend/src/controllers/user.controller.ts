@@ -64,4 +64,13 @@ export class UserController {
             res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({ message: error.message || "Error logging in" });
         }
     }
+
+    static async getAllUsers(req: Request, res: Response) {
+        try {
+            const users = await userService.getAllUsers();
+            res.status(HTTP_STATUS_CODES.OK).json({ users });
+        } catch (error: any) {
+            res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: error.message || "Error retrieving users" });
+        }
+    }
 }

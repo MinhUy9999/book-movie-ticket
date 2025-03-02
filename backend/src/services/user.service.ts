@@ -56,4 +56,8 @@ export class UserService {
             throw new Error(error.message || "Error logging in");
         }
     }
+
+    async getAllUsers() {
+        return await User.find().select("-password");
+    }
 }

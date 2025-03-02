@@ -4,6 +4,7 @@ import userRoutes from "./routes/user.routes";
 import cookieParser from "cookie-parser";
 const app = express();
 const PORT = process.env.PORT || 3000;
+// commit file 
 app.use(express.json()); // Middleware để parse JSON
 app.use(cookieParser()); // Middleware để parse cookie
 app.use("/api/users", userRoutes);

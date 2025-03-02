@@ -1,27 +1,23 @@
 import express, { Request, Response } from "express";
 import { UserController } from "../controllers/user.controller";
 
+const userRoutes = express.Router();
 
-const router = express.Router();
-
-router.post("/create-user", async (req: Request, res: Response) => {
-    await UserController.createUser(req, res);
+userRoutes.post("/register", (req: Request, res: Response) => {
+    UserController.register(req, res);
 });
 
-
-router.post("/login", async (req: Request, res: Response) => {
-    await UserController.login(req, res);
+userRoutes.post("/login", (req: Request, res: Response) => {
+    UserController.login(req, res);
 });
 
-router.post("/logout", (req: Request, res: Response) => {
-    res.clearCookie("token", {
+userRoutes.post("/logout", (req: Request, res: Response) => {
+    res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
     });
     res.json({ message: "Logout successful" });
-})
+});
 
-
-
-export default router;
+export default userRoutes;

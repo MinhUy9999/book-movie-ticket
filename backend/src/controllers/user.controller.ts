@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { HTTP_STATUS_CODES } from "../httpStatus/httpStatusCode";
 import { UserService } from "../services/user.service";
-import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../utils/jwt";
 import { isValidEmail, isValidPhoneNumber, isValidPassword, isValidDateOfBirth } from "../utils/validation";
 
 const userService = new UserService();
@@ -71,6 +71,32 @@ export class UserController {
             res.status(HTTP_STATUS_CODES.OK).json({ users });
         } catch (error: any) {
             res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: error.message || "Error retrieving users" });
+        }
+    }
+
+    static async refreshToken(req: Request, res: Response) {
+        try {
+            const refreshToken = req.cookies?.refreshToken;
+            if (!refreshToken) {
+                return res.status(HTTP_STATUS_CODES.UNAUTHORIZED).json({ message: "No refresh token provided" });
+            }
+
+            const decoded: any = verifyRefreshToken(refreshToken);
+            if (!decoded) {
+                return res.status(HTTP_STATUS_CODES.FORBIDDEN).json({ message: "Invalid refresh token" });
+            }
+
+            const userPayload = {
+                username: decoded.username,
+                email: decoded.email,
+                role: decoded.role,
+            };
+
+            const newAccessToken = generateAccessToken(userPayload);
+
+            res.status(HTTP_STATUS_CODES.OK).json({ accessToken: newAccessToken });
+        } catch (error: any) {
+            res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: error.message || "Error refreshing token" });
         }
     }
 }

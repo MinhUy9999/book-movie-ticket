@@ -24,7 +24,7 @@ export class UserService {
                 phone,
                 dateofbirth,
                 avatar: finalAvatar,
-                role, // Lưu role vào database
+                role, 
             });
 
             await newUser.save();
@@ -44,7 +44,6 @@ export class UserService {
             const isPasswordValid = await bcrypt.compare(password, user.password);
             if (!isPasswordValid) throw new Error("Invalid password");
 
-            // Tạo token chứa role
             const token = jwt.sign(
                 { username: user.username, email: user.email, role: user.role },
                 process.env.JWT_SECRET as string,
@@ -59,6 +58,6 @@ export class UserService {
     }
 
     async getAllUsers() {
-        return await User.find().select("-password"); // Ẩn mật khẩu khi trả về danh sách user
+        return await User.find().select("-password"); 
     }
 }

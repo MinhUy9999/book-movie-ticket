@@ -11,6 +11,11 @@ userRoutes.post("/login", (req: Request, res: Response) => {
     UserController.login(req, res);
 });
 
+//gọi hàm này ở client để phòng khi accessToken hết hạn
+userRoutes.post("/refresh-token", (req: Request, res: Response) => {
+    UserController.refreshToken(req, res);
+});
+
 userRoutes.post("/logout", (req: Request, res: Response) => {
     res.clearCookie("refreshToken", {
         httpOnly: true,

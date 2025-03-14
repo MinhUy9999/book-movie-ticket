@@ -1,12 +1,12 @@
 import { UserService } from "../services/user.service";
 import { HTTP_STATUS_CODES } from "../httpStatus/httpStatusCode";
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { isValidEmail, isValidPhoneNumber, isValidPassword, isValidDateOfBirth } from "../utils/validation";
 
 const userService = new UserService();
 
 export class UserController {
-    static async createUser(req: Request, res: Response) {
+    static async register(req: Request, res: Response) {
         try {
             const { username, password, email, genders, phone, dateofbirth, avatar, role } = req.body;
 

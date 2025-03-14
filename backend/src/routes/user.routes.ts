@@ -4,8 +4,8 @@ import { UserController } from "../controllers/user.controller";
 
 const router = express.Router();
 
-router.post("/create-user", async (req: Request, res: Response) => {
-    await UserController.createUser(req, res);
+router.post("/register", async (req: Request, res: Response) => {
+    await UserController.register(req, res);
 });
 
 

@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-console.log("🔍 MONGO_URI:", process.env.MONGO_URI); // Kiểm tra URI có đúng không
+console.log("🔍 MONGO_URI:", process.env.MONGO_URI);
 
 const MONGO_URI = process.env.MONGO_URI as string;
 
@@ -25,10 +25,9 @@ export class Database {
             console.log("✅ Connected to MongoDB");
         } catch (error) {
             console.error("❌ Database connection error:", error);
-            process.exit(1); // Dừng server nếu không kết nối được
+            process.exit(1);
         }
     }
 }
 
-// Khởi tạo kết nối khi import
 export const db = new Database();

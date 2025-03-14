@@ -1,11 +1,10 @@
-
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IUser extends Document {
     username: string;
     email: string;
     password: string;
-    genders: string;
+    gender: string;
     phone: string;
     dateofbirth: Date;
     avatar: string;
@@ -14,13 +13,15 @@ export interface IUser extends Document {
     updatedAt: Date;
 }
 const UserSchema: Schema = new Schema({
-    username: { type: String, required: true, unique: true },
+    username: { type: String, unique: true },
     password: { type: String, required: true },
     email: { type: String, required: true, unique: true, index: true, match: [/^\S+@\S+\.\S+$/, "Invalid email format"] },
-    genders: { type: String, required: true },
+    gender: { type: String, required: true },
     phone: { type: String, required: true },
     dateofbirth: { type: Date, required: true },
-    avatar: { type: String, required: true },
+    avatar: {
+        type: String,
+    },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }

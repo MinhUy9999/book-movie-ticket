@@ -1,64 +1,63 @@
 import { User } from "../models/user.model";
 import bcrypt from "bcrypt";
-import jwt from 'jsonwebtoken';
 
 export class UserService {
-    async createUser(username: string, password: string, email: string, genders: string, phone: string, dateofbirth: string, avatar?: string, role: "user" | "admin" = "user") {
+    async register(email: string, password: string, phone: string, dateofbirth: string, gender: string, avatar?: string) {
         try {
-            const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+            const existingUser = await User.findOne({ email });
             if (existingUser) {
-                throw new Error(existingUser.email === email ? "Email already exists" : "Username already exists");
+                throw new Error("Email already exists");
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
-            const defaultAvatar = genders === "male"
-                ? `https://avatar.iran.liara.run/public/boy?username=${username}`
-                : `https://avatar.iran.liara.run/public/girl?username=${username}`;
+            const defaultAvatar = gender === "male"
+                ? `https://avatar.iran.liara.run/public/boy?email=${email}`
+                : `https://avatar.iran.liara.run/public/girl?email=${email}`;
             const finalAvatar = avatar || defaultAvatar;
 
+            const [day, month, year] = dateofbirth.split("/");
+            const dobDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+
             const newUser = new User({
-                username,
-                password: hashedPassword,
                 email,
-                genders,
+                password: hashedPassword,
                 phone,
-                dateofbirth,
+                dateofbirth: dobDate,
+                gender, 
                 avatar: finalAvatar,
-                role, // Lưu role vào database
+                role: "user"
             });
 
             await newUser.save();
+
+            newUser.username = `user${newUser._id}`;
+            await newUser.save();
+
             return newUser;
         } catch (error: unknown) {
             const err = error as Error;
-            console.error("❌ Error creating user:", err.message);
-            throw new Error(err.message || "Error creating user");
+            throw new Error(err.message || "Error registering user");
         }
     }
 
-    async login(username: string, password: string) {
+    async login(email: string, password: string) {
         try {
-            const user = await User.findOne({ username });
-            if (!user) throw new Error("User not found");
+            const user = await User.findOne({ email });
+            if (!user) {
+                throw new Error("User not found");
+            }
 
             const isPasswordValid = await bcrypt.compare(password, user.password);
-            if (!isPasswordValid) throw new Error("Invalid password");
-
-            // Tạo token chứa role
-            const token = jwt.sign(
-                { username: user.username, email: user.email, role: user.role },
-                process.env.JWT_SECRET as string,
-                { expiresIn: "1h" }
-            );
-
-            return { token, user };
+            if (!isPasswordValid) {
+                throw new Error("Invalid password");
+            }
+            return user;
         } catch (error: any) {
-            console.error("❌ Error logging in:", error.message);
             throw new Error(error.message || "Error logging in");
         }
     }
 
     async getAllUsers() {
-        return await User.find().select("-password"); // Ẩn mật khẩu khi trả về danh sách user
+        return await User.find().select("-password");
     }
 }

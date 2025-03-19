@@ -60,4 +60,17 @@ export class UserService {
     async getAllUsers() {
         return await User.find().select("-password");
     }
+    
+    // Thêm phương thức getUserById
+    async getUserById(userId: string) {
+        try {
+            const user = await User.findById(userId);
+            if (!user) {
+                throw new Error("User not found");
+            }
+            return user;
+        } catch (error: any) {
+            throw new Error(error.message || "Error finding user");
+        }
+    }
 }

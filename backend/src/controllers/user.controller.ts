@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { HTTP_STATUS_CODES } from "../httpStatus/httpStatusCode";
-import { UserService } from "../services/user.service";
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../utils/jwt";
 import { isValidEmail, isValidPhoneNumber, isValidPassword, isValidDateOfBirth } from "../utils/validation";
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../utils/jwt";
+import { UserService } from "../services/user.service";
 
 const userService = new UserService();
 

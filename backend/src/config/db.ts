@@ -3,15 +3,17 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+console.log("🔍 MONGO_URI:", process.env.MONGO_URI);
+
 const MONGO_URI = process.env.MONGO_URI as string;
 
 if (!MONGO_URI) {
-    throw new Error("MONGO_URI is not defined in .env file");
+    throw new Error("❌ MONGO_URI is not defined in .env file");
 }
 
 export class Database {
     constructor() {
-        console.log("Initializing MongoDB connection...");
+        console.log("📡 Initializing MongoDB connection...");
         this.connect();
     }
 
@@ -20,10 +22,10 @@ export class Database {
             await mongoose.connect(MONGO_URI, {
                 serverSelectionTimeoutMS: 5000,
             });
-            console.log("Connected to MongoDB");
+            console.log("✅ Connected to MongoDB");
         } catch (error) {
-            console.error("Database connection error:", error);
-            process.exit(1); 
+            console.error("❌ Database connection error:", error);
+            process.exit(1);
         }
     }
 }

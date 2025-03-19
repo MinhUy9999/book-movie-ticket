@@ -3,15 +3,16 @@ import { UserController } from "../controllers/user.controller";
 
 const userRoutes = express.Router();
 
-userRoutes.post("/register", (req: Request, res: Response) => {
-    UserController.register(req, res);
+const router = express.Router();
+
+userRoutes.post("/register", async (req: Request, res: Response) => {
+    await UserController.register(req, res);
 });
 
 userRoutes.post("/login", (req: Request, res: Response) => {
     UserController.login(req, res);
 });
 
-//gọi hàm này ở client để phòng khi accessToken hết hạn
 userRoutes.post("/refresh-token", (req: Request, res: Response) => {
     UserController.refreshToken(req, res);
 });

@@ -1,4 +1,3 @@
-
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IUser extends Document {
@@ -20,8 +19,8 @@ const UserSchema: Schema = new Schema({
     gender: { type: String, required: true },
     phone: { type: String, required: true },
     dateofbirth: { type: Date, required: true },
-    avatar: { 
-        type: String, 
+    avatar: {
+        type: String,
     },
     role: { type: String, enum: ["user", "admin"], default: "user" },
     createdAt: { type: Date, default: Date.now },

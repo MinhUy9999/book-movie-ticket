@@ -1,3 +1,4 @@
+// File định tuyến các endpoint liên quan đến người dùng
 import express, { Request, Response } from "express";
 import { UserController } from "../controllers/user.controller";
 
@@ -24,6 +25,15 @@ userRoutes.post("/logout", (req: Request, res: Response) => {
         sameSite: "strict",
     });
     res.json({ message: "Logout successful" });
+});
+// Endpoint gửi email quên mật khẩu
+userRoutes.post("/forgot-password", (req: Request, res: Response) => {
+    UserController.forgotPassword(req, res);
+});
+
+// Endpoint đặt lại mật khẩu
+userRoutes.post("/reset-password", (req: Request, res: Response) => {
+    UserController.resetPassword(req, res);
 });
 
 export default userRoutes;

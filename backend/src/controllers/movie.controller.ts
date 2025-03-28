@@ -1,22 +1,20 @@
 import { Request, Response } from "express";
 import { HTTP_STATUS_CODES } from "../httpStatus/httpStatusCode";
 import { MovieService } from "../services/movie.service";
+import { uploadMovieFiles } from "../middlewares/multerConfig";
+import { responseSend } from "../config/response"; // Giả sử hàm này nằm trong file utils/responseSend.ts
 
 const movieService = new MovieService();
 
 export class MovieController {
   static async getAllMovies(req: Request, res: Response): Promise<void> {
     try {
-      // Check for query parameters
       const includeInactive = req.query.includeInactive === 'true';
-      
       const movies = await movieService.getAllMovies(includeInactive);
-      res.status(HTTP_STATUS_CODES.OK).json({ movies });
+      responseSend(res, { movies }, "Movies fetched successfully", HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error fetching movies:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error fetching movies"
-      });
+      responseSend(res, null, error.message || "Error fetching movies", HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -24,42 +22,36 @@ export class MovieController {
     try {
       const { id } = req.params;
       const movie = await movieService.getMovieById(id);
-      
+
       if (!movie) {
-        res.status(HTTP_STATUS_CODES.NOT_FOUND).json({ message: "Movie not found" });
+        responseSend(res, null, "Movie not found", HTTP_STATUS_CODES.NOT_FOUND);
         return;
       }
-      
-      res.status(HTTP_STATUS_CODES.OK).json({ movie });
+
+      responseSend(res, { movie }, "Movie fetched successfully", HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error fetching movie:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error fetching movie"
-      });
+      responseSend(res, null, error.message || "Error fetching movie", HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
 
   static async getActiveMovies(req: Request, res: Response): Promise<void> {
     try {
       const movies = await movieService.getActiveMovies();
-      res.status(HTTP_STATUS_CODES.OK).json({ movies });
+      responseSend(res, { movies }, "Active movies fetched successfully", HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error fetching active movies:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error fetching active movies"
-      });
+      responseSend(res, null, error.message || "Error fetching active movies", HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
 
   static async getUpcomingMovies(req: Request, res: Response): Promise<void> {
     try {
       const movies = await movieService.getUpcomingMovies();
-      res.status(HTTP_STATUS_CODES.OK).json({ movies });
+      responseSend(res, { movies }, "Upcoming movies fetched successfully", HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error fetching upcoming movies:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error fetching upcoming movies"
-      });
+      responseSend(res, null, error.message || "Error fetching upcoming movies", HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -67,12 +59,10 @@ export class MovieController {
     try {
       const { genre } = req.params;
       const movies = await movieService.getMoviesByGenre(genre);
-      res.status(HTTP_STATUS_CODES.OK).json({ movies });
+      responseSend(res, { movies }, `Movies by genre '${genre}' fetched successfully`, HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error fetching movies by genre:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error fetching movies by genre"
-      });
+      responseSend(res, null, error.message || "Error fetching movies by genre", HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -80,25 +70,36 @@ export class MovieController {
     try {
       const { query } = req.query;
       const movies = await movieService.searchMovies(query as string);
-      res.status(HTTP_STATUS_CODES.OK).json({ movies });
+      responseSend(res, { movies }, `Movies matching '${query}' fetched successfully`, HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error searching movies:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error searching movies"
-      });
+      responseSend(res, null, error.message || "Error searching movies", HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
 
   static async createMovie(req: Request, res: Response): Promise<void> {
     try {
       const movieData = req.body;
+
+      if (req.files && "poster" in req.files && req.files["poster"][0]) {
+        const posterFilename = req.files["poster"][0].filename;
+        movieData.posterUrl = `/uploads/posters/${posterFilename}`;
+        console.log("Poster filename:", posterFilename);
+        console.log("Poster URL saved:", movieData.posterUrl);
+      }
+      if (req.files && "trailer" in req.files && req.files["trailer"][0]) {
+        const trailerFilename = req.files["trailer"][0].filename;
+        movieData.trailerUrl = `/uploads/trailers/${trailerFilename}`;
+        console.log("Trailer filename:", trailerFilename);
+        console.log("Trailer URL saved:", movieData.trailerUrl);
+      }
+
       const movie = await movieService.createMovie(movieData);
-      res.status(HTTP_STATUS_CODES.CREATED).json({ message: "Movie created successfully", movie });
+      console.log("Movie created:", movie);
+      responseSend(res, { movie }, "Movie created successfully", HTTP_STATUS_CODES.CREATED);
     } catch (error: any) {
       console.error("Error creating movie:", error.message);
-      res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ 
-        message: error.message || "Error creating movie"
-      });
+      responseSend(res, null, error.message || "Error creating movie", HTTP_STATUS_CODES.BAD_REQUEST);
     }
   }
 
@@ -106,20 +107,25 @@ export class MovieController {
     try {
       const { id } = req.params;
       const movieData = req.body;
-      
+
+      if (req.files && "poster" in req.files && req.files["poster"][0]) {
+        movieData.posterUrl = `/uploads/posters/${req.files["poster"][0].filename}`;
+      }
+      if (req.files && "trailer" in req.files && req.files["trailer"][0]) {
+        movieData.trailerUrl = `/uploads/trailers/${req.files["trailer"][0].filename}`;
+      }
+
       const movie = await movieService.updateMovie(id, movieData);
-      
+
       if (!movie) {
-        res.status(HTTP_STATUS_CODES.NOT_FOUND).json({ message: "Movie not found" });
+        responseSend(res, null, "Movie not found", HTTP_STATUS_CODES.NOT_FOUND);
         return;
       }
-      
-      res.status(HTTP_STATUS_CODES.OK).json({ message: "Movie updated successfully", movie });
+
+      responseSend(res, { movie }, "Movie updated successfully", HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error updating movie:", error.message);
-      res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ 
-        message: error.message || "Error updating movie"
-      });
+      responseSend(res, null, error.message || "Error updating movie", HTTP_STATUS_CODES.BAD_REQUEST);
     }
   }
 
@@ -127,18 +133,16 @@ export class MovieController {
     try {
       const { id } = req.params;
       const result = await movieService.deleteMovie(id);
-      
+
       if (!result) {
-        res.status(HTTP_STATUS_CODES.NOT_FOUND).json({ message: "Movie not found" });
+        responseSend(res, null, "Movie not found", HTTP_STATUS_CODES.NOT_FOUND);
         return;
       }
-      
-      res.status(HTTP_STATUS_CODES.OK).json({ message: "Movie deleted successfully" });
+
+      responseSend(res, null, "Movie deleted successfully", HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error deleting movie:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error deleting movie"
-      });
+      responseSend(res, null, error.message || "Error deleting movie", HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -146,19 +150,18 @@ export class MovieController {
     try {
       const { id } = req.params;
       let date = undefined;
-      
-      // Check if date query parameter is provided
+
       if (req.query.date) {
         date = new Date(req.query.date as string);
       }
-      
+
       const showtimes = await movieService.getMovieShowtimes(id, date);
-      res.status(HTTP_STATUS_CODES.OK).json({ showtimes });
+      responseSend(res, { showtimes }, "Movie showtimes fetched successfully", HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error fetching movie showtimes:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error fetching movie showtimes"
-      });
+      responseSend(res, null, error.message || "Error fetching movie showtimes", HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
   }
 }
+
+export { uploadMovieFiles };

@@ -1,3 +1,4 @@
+// File định nghĩa schema, và model cho collection cho user trong mongoose 
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IUser extends Document {
@@ -9,6 +10,8 @@ export interface IUser extends Document {
     dateofbirth: Date;
     avatar: string;
     role: "user" | "admin";
+    resetPasswordToken?: string;
+    resetPasswordExpires?: Date;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -23,6 +26,8 @@ const UserSchema: Schema = new Schema({
         type: String,
     },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    resetPasswordToken: { type: String, required: false },
+    resetPasswordExpires: { type: Date, required: false },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true });

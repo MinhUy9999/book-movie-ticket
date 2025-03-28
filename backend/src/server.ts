@@ -5,6 +5,7 @@ import { db } from "./patterns/singleton/DatabaseSingleton";
 import router from "./routes/index.routes";
 import { notificationService } from "./patterns/observer/NotificationSystem";
 import { EmailNotification, SMSNotification, PushNotification } from "./patterns/observer/NotificationSystem";
+import path from "path";
 
 // Initialize app
 const app = express();
@@ -17,6 +18,7 @@ app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:5173'], // Frontend URLs
   credentials: true
 }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Setup notification observers
 const emailNotifier = new EmailNotification();

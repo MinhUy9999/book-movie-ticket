@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IMovie extends Document {
   title: string;
   description: string;
-  duration: number; // in minutes
+  duration: number;
   genre: string[];
   language: string;
   releaseDate: Date;

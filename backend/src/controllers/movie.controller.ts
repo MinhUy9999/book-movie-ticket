@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import { HTTP_STATUS_CODES } from "../httpStatus/httpStatusCode";
 import { MovieService } from "../services/movie.service";
 import { uploadMovieFiles } from "../middlewares/multerConfig";
-import { responseSend } from "../config/response"; // Giả sử hàm này nằm trong file utils/responseSend.ts
+import { responseSend } from "../config/response"; 
+import { CloudinaryService } from "../services/cloudinary.service";
 
 const movieService = new MovieService();
 
@@ -80,22 +81,22 @@ export class MovieController {
   static async createMovie(req: Request, res: Response): Promise<void> {
     try {
       const movieData = req.body;
-
+  
       if (req.files && "poster" in req.files && req.files["poster"][0]) {
-        const posterFilename = req.files["poster"][0].filename;
-        movieData.posterUrl = `/uploads/posters/${posterFilename}`;
-        console.log("Poster filename:", posterFilename);
-        console.log("Poster URL saved:", movieData.posterUrl);
+        const posterFile = req.files["poster"][0];
+        const posterResult = await CloudinaryService.uploadFile(posterFile.path, 'movie-posters');
+        movieData.posterUrl = posterResult.secure_url;
+        movieData.posterPublicId = posterResult.public_id;
       }
+      
       if (req.files && "trailer" in req.files && req.files["trailer"][0]) {
-        const trailerFilename = req.files["trailer"][0].filename;
-        movieData.trailerUrl = `/uploads/trailers/${trailerFilename}`;
-        console.log("Trailer filename:", trailerFilename);
-        console.log("Trailer URL saved:", movieData.trailerUrl);
+        const trailerFile = req.files["trailer"][0];
+        const trailerResult = await CloudinaryService.uploadFile(trailerFile.path, 'movie-trailers');
+        movieData.trailerUrl = trailerResult.secure_url;
+        movieData.trailerPublicId = trailerResult.public_id;
       }
-
+  
       const movie = await movieService.createMovie(movieData);
-      console.log("Movie created:", movie);
       responseSend(res, { movie }, "Movie created successfully", HTTP_STATUS_CODES.CREATED);
     } catch (error: any) {
       console.error("Error creating movie:", error.message);
@@ -107,21 +108,38 @@ export class MovieController {
     try {
       const { id } = req.params;
       const movieData = req.body;
-
+  
+      const existingMovie = await movieService.getMovieById(id);
+  
       if (req.files && "poster" in req.files && req.files["poster"][0]) {
-        movieData.posterUrl = `/uploads/posters/${req.files["poster"][0].filename}`;
+        const posterFile = req.files["poster"][0];
+        const posterResult = await CloudinaryService.uploadFile(posterFile.path, 'movie-posters');
+        movieData.posterUrl = posterResult.secure_url;
+        movieData.posterPublicId = posterResult.public_id;
+        
+        if (existingMovie && existingMovie.posterPublicId) {
+          await CloudinaryService.deleteFile(existingMovie.posterPublicId);
+        }
       }
+      
       if (req.files && "trailer" in req.files && req.files["trailer"][0]) {
-        movieData.trailerUrl = `/uploads/trailers/${req.files["trailer"][0].filename}`;
+        const trailerFile = req.files["trailer"][0];
+        const trailerResult = await CloudinaryService.uploadFile(trailerFile.path, 'movie-trailers');
+        movieData.trailerUrl = trailerResult.secure_url;
+        movieData.trailerPublicId = trailerResult.public_id;
+        
+        if (existingMovie && existingMovie.trailerPublicId) {
+          await CloudinaryService.deleteFile(existingMovie.trailerPublicId);
+        }
       }
-
+  
       const movie = await movieService.updateMovie(id, movieData);
-
+  
       if (!movie) {
         responseSend(res, null, "Movie not found", HTTP_STATUS_CODES.NOT_FOUND);
         return;
       }
-
+  
       responseSend(res, { movie }, "Movie updated successfully", HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error updating movie:", error.message);

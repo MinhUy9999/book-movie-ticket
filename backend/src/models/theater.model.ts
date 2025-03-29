@@ -6,10 +6,8 @@ export interface ITheater extends Document {
     address: string;
     city: string;
     state: string;
-    postalCode: string;
     country: string;
   };
-  totalScreens: number;
   facilities: string[];
   isActive: boolean;
 }
@@ -20,10 +18,8 @@ const TheaterSchema: Schema = new Schema({
     address: { type: String, required: true },
     city: { type: String, required: true },
     state: { type: String, required: true },
-    postalCode: { type: String, required: true },
     country: { type: String, required: true },
   },
-  totalScreens: { type: Number, required: true, min: 1 },
   facilities: [{ type: String }],
   isActive: { type: Boolean, default: true }
 }, { timestamps: true });

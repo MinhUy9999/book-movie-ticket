@@ -13,17 +13,32 @@ const transporter = nodemailer.createTransport({
 });
 export class UserService {
     // Phương thức xử lý đăng ký người dùng mới 
-    async register(email: string, password: string, phone: string, dateofbirth: string, gender: string, avatar?: string) {
+    async register(
+        email: string,
+        password: string,
+        phone: string,
+        dateofbirth: string,
+        gender: string,
+        username: string, // Thêm username vào tham số
+        avatar?: string
+    ) {
         try {
-            const existingUser = await User.findOne({ email });
+            // Kiểm tra email hoặc username đã tồn tại
+            const existingUser = await User.findOne({ $or: [{ email }, { username }] });
             if (existingUser) {
-                throw new Error("Email already exists");
+                if (existingUser.email === email) {
+                    throw new Error("Email already exists");
+                }
+                if (existingUser.username === username) {
+                    throw new Error("Username already exists");
+                }
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
-            const defaultAvatar = gender === "male"
-                ? `https://avatar.iran.liara.run/public/boy?email=${email}`
-                : `https://avatar.iran.liara.run/public/girl?email=${email}`;
+            const defaultAvatar =
+                gender === "male"
+                    ? `https://avatar.iran.liara.run/public/boy?email=${email}`
+                    : `https://avatar.iran.liara.run/public/girl?email=${email}`;
             const finalAvatar = avatar || defaultAvatar;
 
             const [day, month, year] = dateofbirth.split("/");
@@ -35,13 +50,11 @@ export class UserService {
                 phone,
                 dateofbirth: dobDate,
                 gender,
+                username, // Sử dụng username từ tham số
                 avatar: finalAvatar,
-                role: "user"
+                role: "user",
             });
 
-            await newUser.save();
-
-            newUser.username = `user${newUser._id}`;
             await newUser.save();
 
             return newUser;

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { HTTP_STATUS_CODES } from "../httpStatus/httpStatusCode";
 import { ShowtimeService } from "../services/showtime.service";
+import { responseSend } from "../config/response"; // Import hàm responseSend
 
 const showtimeService = new ShowtimeService();
 
@@ -8,19 +9,22 @@ export class ShowtimeController {
   static async getAllShowtimes(req: Request, res: Response): Promise<void> {
     try {
       let date = undefined;
-      
+
       // Check if date query parameter is provided
       if (req.query.date) {
         date = new Date(req.query.date as string);
       }
-      
+
       const showtimes = await showtimeService.getAllShowtimes(date);
-      res.status(HTTP_STATUS_CODES.OK).json({ showtimes });
+      responseSend(res, { showtimes }, "Showtimes fetched successfully", HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error fetching showtimes:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error fetching showtimes"
-      });
+      responseSend(
+        res,
+        null,
+        error.message || "Error fetching showtimes",
+        HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
@@ -28,18 +32,21 @@ export class ShowtimeController {
     try {
       const { id } = req.params;
       const showtime = await showtimeService.getShowtimeById(id);
-      
+
       if (!showtime) {
-        res.status(HTTP_STATUS_CODES.NOT_FOUND).json({ message: "Showtime not found" });
+        responseSend(res, null, "Showtime not found", HTTP_STATUS_CODES.NOT_FOUND);
         return;
       }
-      
-      res.status(HTTP_STATUS_CODES.OK).json({ showtime });
+
+      responseSend(res, { showtime }, "Showtime fetched successfully", HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error fetching showtime:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error fetching showtime"
-      });
+      responseSend(
+        res,
+        null,
+        error.message || "Error fetching showtime",
+        HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
@@ -47,12 +54,20 @@ export class ShowtimeController {
     try {
       const { movieId } = req.params;
       const showtimes = await showtimeService.getShowtimesByMovie(movieId);
-      res.status(HTTP_STATUS_CODES.OK).json({ showtimes });
+      responseSend(
+        res,
+        { showtimes },
+        "Showtimes by movie fetched successfully",
+        HTTP_STATUS_CODES.OK
+      );
     } catch (error: any) {
       console.error("Error fetching showtimes by movie:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error fetching showtimes by movie"
-      });
+      responseSend(
+        res,
+        null,
+        error.message || "Error fetching showtimes by movie",
+        HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
@@ -60,12 +75,20 @@ export class ShowtimeController {
     try {
       const { theaterId } = req.params;
       const showtimes = await showtimeService.getShowtimesByTheater(theaterId);
-      res.status(HTTP_STATUS_CODES.OK).json({ showtimes });
+      responseSend(
+        res,
+        { showtimes },
+        "Showtimes by theater fetched successfully",
+        HTTP_STATUS_CODES.OK
+      );
     } catch (error: any) {
       console.error("Error fetching showtimes by theater:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error fetching showtimes by theater"
-      });
+      responseSend(
+        res,
+        null,
+        error.message || "Error fetching showtimes by theater",
+        HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
@@ -73,12 +96,20 @@ export class ShowtimeController {
     try {
       const showtimeData = req.body;
       const showtime = await showtimeService.createShowtime(showtimeData);
-      res.status(HTTP_STATUS_CODES.CREATED).json({ message: "Showtime created successfully", showtime });
+      responseSend(
+        res,
+        { showtime },
+        "Showtime created successfully",
+        HTTP_STATUS_CODES.CREATED
+      );
     } catch (error: any) {
       console.error("Error creating showtime:", error.message);
-      res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ 
-        message: error.message || "Error creating showtime"
-      });
+      responseSend(
+        res,
+        null,
+        error.message || "Error creating showtime",
+        HTTP_STATUS_CODES.BAD_REQUEST
+      );
     }
   }
 
@@ -86,20 +117,28 @@ export class ShowtimeController {
     try {
       const { id } = req.params;
       const showtimeData = req.body;
-      
+
       const showtime = await showtimeService.updateShowtime(id, showtimeData);
-      
+
       if (!showtime) {
-        res.status(HTTP_STATUS_CODES.NOT_FOUND).json({ message: "Showtime not found" });
+        responseSend(res, null, "Showtime not found", HTTP_STATUS_CODES.NOT_FOUND);
         return;
       }
-      
-      res.status(HTTP_STATUS_CODES.OK).json({ message: "Showtime updated successfully", showtime });
+
+      responseSend(
+        res,
+        { showtime },
+        "Showtime updated successfully",
+        HTTP_STATUS_CODES.OK
+      );
     } catch (error: any) {
       console.error("Error updating showtime:", error.message);
-      res.status(HTTP_STATUS_CODES.BAD_REQUEST).json({ 
-        message: error.message || "Error updating showtime"
-      });
+      responseSend(
+        res,
+        null,
+        error.message || "Error updating showtime",
+        HTTP_STATUS_CODES.BAD_REQUEST
+      );
     }
   }
 
@@ -107,18 +146,21 @@ export class ShowtimeController {
     try {
       const { id } = req.params;
       const result = await showtimeService.deleteShowtime(id);
-      
+
       if (!result) {
-        res.status(HTTP_STATUS_CODES.NOT_FOUND).json({ message: "Showtime not found" });
+        responseSend(res, null, "Showtime not found", HTTP_STATUS_CODES.NOT_FOUND);
         return;
       }
-      
-      res.status(HTTP_STATUS_CODES.OK).json({ message: "Showtime deleted successfully" });
+
+      responseSend(res, null, "Showtime deleted successfully", HTTP_STATUS_CODES.OK);
     } catch (error: any) {
       console.error("Error deleting showtime:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error deleting showtime"
-      });
+      responseSend(
+        res,
+        null,
+        error.message || "Error deleting showtime",
+        HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
@@ -126,12 +168,20 @@ export class ShowtimeController {
     try {
       const { id } = req.params;
       const seats = await showtimeService.getShowtimeSeats(id);
-      res.status(HTTP_STATUS_CODES.OK).json({ seats });
+      responseSend(
+        res,
+        { seats },
+        "Showtime seats fetched successfully",
+        HTTP_STATUS_CODES.OK
+      );
     } catch (error: any) {
       console.error("Error fetching showtime seats:", error.message);
-      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR).json({ 
-        message: error.message || "Error fetching showtime seats"
-      });
+      responseSend(
+        res,
+        null,
+        error.message || "Error fetching showtime seats",
+        HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+      );
     }
   }
 }

@@ -12,22 +12,41 @@ export class UserController {
     // Phương thức đăng ký người dùng
     static async register(req: Request, res: Response) {
         try {
-            const { email, password, phone, dateofbirth, gender, avatar } = req.body;
+            const { email, password, phone, dateofbirth, gender, username, avatar } = req.body;
 
+            if (!username) {
+                return responseSend(res, null, "Username là bắt buộc", HTTP_STATUS_CODES.BAD_REQUEST);
+            }
             if (!isValidEmail(email)) {
                 return responseSend(res, null, "Định dạng email không hợp lệ", HTTP_STATUS_CODES.BAD_REQUEST);
             }
             if (!isValidPhoneNumber(phone)) {
-                return responseSend(res, null, "Định dạng số điện thoại không hợp lệ (ít nhất 10 số)", HTTP_STATUS_CODES.BAD_REQUEST);
+                return responseSend(
+                    res,
+                    null,
+                    "Định dạng số điện thoại không hợp lệ (ít nhất 10 số)",
+                    HTTP_STATUS_CODES.BAD_REQUEST
+                );
             }
             if (!isValidPassword(password)) {
-                return responseSend(res, null, "Mật khẩu phải dài ít nhất 8 ký tự và chứa ít nhất 1 chữ cái và 1 số", HTTP_STATUS_CODES.BAD_REQUEST);
+                return responseSend(
+                    res,
+                    null,
+                    "Mật khẩu phải dài ít nhất 8 ký tự và chứa ít nhất 1 chữ cái và 1 số",
+                    HTTP_STATUS_CODES.BAD_REQUEST
+                );
             }
             if (!isValidDateOfBirth(dateofbirth)) {
-                return responseSend(res, null, "Định dạng ngày không hợp lệ (phải là dd/mm/yyyy)", HTTP_STATUS_CODES.BAD_REQUEST);
+                return responseSend(
+                    res,
+                    null,
+                    "Định dạng ngày không hợp lệ (phải là dd/mm/yyyy)",
+                    HTTP_STATUS_CODES.BAD_REQUEST
+                );
             }
 
-            const user = await userService.register(email, password, phone, dateofbirth, gender, avatar);
+            // Sửa thứ tự tham số: gender trước, username sau
+            const user = await userService.register(email, password, phone, dateofbirth, gender, username, avatar);
             const userPayload = { username: user.username, email: user.email, role: user.role };
             const accessToken = generateAccessToken(userPayload);
             const refreshToken = generateRefreshToken(userPayload);
@@ -36,7 +55,12 @@ export class UserController {
             responseSend(res, { user, accessToken }, "Đăng ký thành công", HTTP_STATUS_CODES.CREATED);
         } catch (error: any) {
             console.error("Error registering user:", error.message);
-            responseSend(res, null, error.message || "Lỗi khi đăng ký người dùng", HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+            responseSend(
+                res,
+                null,
+                error.message || "Lỗi khi đăng ký người dùng",
+                HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR
+            );
         }
     }
     // Phương thức đăng nhập người dùng

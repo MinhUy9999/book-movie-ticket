@@ -1,26 +1,18 @@
-// import Header from "./pages/Header"
 
-import { Outlet } from "react-router-dom"
-import Header from "./components/Header"
-import Footer from "./components/Footer"
-import '@fortawesome/fontawesome-free/css/all.min.css';
-
+import { Outlet } from "react-router-dom";
+import Header from "./components/Header";
+import Banner from "./components/Banner";
 
 function App() {
-
-
   return (
-    <main>
+    <div>
       <Header />
-      <div className="">
+      <Banner />
+      <main className="pt-20">
         <Outlet />
-      </div>
-
-      <Footer />
-
-
-    </main>
-  )
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;

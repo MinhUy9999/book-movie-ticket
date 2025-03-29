@@ -12,7 +12,9 @@ export interface IMovie extends Document {
   cast: string[];
   rating: number;
   posterUrl: string;
+  posterPublicId?: string; 
   trailerUrl: string;
+  trailerPublicId?: string; 
   isActive: boolean;
 }
 
@@ -28,7 +30,9 @@ const MovieSchema: Schema = new Schema({
   cast: [{ type: String }],
   rating: { type: Number, default: 0, min: 0, max: 10 },
   posterUrl: { type: String },
+  posterPublicId: { type: String }, 
   trailerUrl: { type: String },
+  trailerPublicId: { type: String },
   isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 
